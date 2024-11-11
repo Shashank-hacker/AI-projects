@@ -30,11 +30,10 @@ class Game:
         if x[0][0]==x[1][1]==x[2][2]!=None or x[0][2]==x[1][1]==x[2][0]!=None:
             return 1 if self.player=='x' else -1
         return 0
-    def show(self):                                #used for printing the game on command line.. will probably make a tkinter version soon
+    def show(self):
         for row in self.game:
-            for cell in row:
-                print(cell if cell!=None else " "," | ", end="")
-            print("\n-----------------")
+            print(" | ".join(cell if cell is not None else " " for cell in row))
+            print("---------")            
     #I coded a lot of static functions for making it easier to code minvalue and maxvalue and aimin functions.. I don't know if they were necessary or not
     @staticmethod
     def actions(game):                                #takes game as input and returns out all available moves
@@ -56,9 +55,9 @@ class Game:
             if i[0]==i[1]==i[2] and i[0]!=None:
                 return 1 if Game.player(x)=='x' else -1        
         for i in range(3):
-            if x[0][i]==x[1][i]==x[2][i]!=None:
+            if x[0][i]==x[1][i]==x[2][i] and x[0][i]!=None:
                 return 1 if Game.player(x)=='x' else -1
-        if x[0][0]==x[1][1]==x[2][2]!=None or x[0][2]==x[1][1]==x[2][0]!=None:
+        if (x[0][0]==x[1][1]==x[2][2] or x[0][2]==x[1][1]==x[2][0]) and x[1][1]!=None:
             return 1 if Game.player(x)=='x' else -1
         return 0    
     @staticmethod
@@ -78,7 +77,7 @@ class Game:
     def minvalue(game):                                                     #takes a game and returns it's minimum value that can be achieved if opponent plays optimally
         if Game.terminal(game):                                            #checking if game is over
             return Game.utilitycheck(game)
-        v=float('inf')                                                    #setting the initial value of v to be the maximum it could be
+        v=1                                                  #setting the initial value of v to be the maximum it could be
         for action1 in Game.actions(game):                                    #running a loop with actions
             v=min(v,Game.maxvalue(Game.result(game,action1)))                 #v would be equal to minmum of current v and the maximum value achievable in the next state as the opposite player will try to play optimally
         return v                                                            #returning v
@@ -86,20 +85,18 @@ class Game:
     def maxvalue(game):                        #maxvalue which will return maximum value of a state 
         if Game.terminal(game):                #checking if game has already ended
             return Game.utilitycheck(game)  
-        v=float('-inf')                        #setting inital value of v to be as minimum as it could be
+        v=-1                     #setting inital value of v to be as minimum as it could be
         for action1 in Game.actions(game):                            #running a loop in actions 
             v=max(v,Game.minvalue(Game.result(game,action1)))         #v would be equal to maximum value of current v and minimum value returned by that action's state as opponent will play to oppose
         return v                                                      
     @staticmethod
     def terminal(game):         #checks if the game has already ended or not
-        if Game.utilitycheck(game)!=0:
-            return True
-        else:
+        if Game.utilitycheck(game)==0:
             for i in game:
                 for j in i:
                     if j==None:
-                        return False
-                return True    
+                        return False 
+        return True 
 #diffrent gamemodes irrevelant to the main problem
 def twoplayer():
     gam= Game()
@@ -136,16 +133,15 @@ def noobai():
             gam.show()
             print("o wins")
             break
-#this function takes a state and gives the move(or atleast attempts to) which would be best for o player, cause it looks at all the moves and usue minvalue to calculate which move results in the best case scenario for o
 def aimin(game):
-    act= None                             #this would store the acttion we would return
-    min_score= float("inf")               #this stores the minimum score.. used to compare with other actionss
-    for i in Game.actions(game):          #running a loop on all available actions for game
-        score= Game.minvalue(Game.result(game,i))          
-        if score<min_score:               
-            act=i                         #replacing act variable if an action which results in a better state for o is found
-            min_score=score             
-    return act
+    best_action = None
+    best_score = float('-inf')  # Start with the lowest possible score for maximizing player
+    for action in Game.actions(game):
+        score = Game.minvalue(Game.result(game, action))  # Get the score for the minimizing player
+        if score > best_score:  # We're looking for the maximum score
+            best_action = action
+            best_score = score
+    return best_action
 def proaix():                            #Just logic to play the game against the ai
     gam= Game()
     while gam.utility==0:
@@ -174,21 +170,4 @@ def main():
             proaix()
 if __name__=="__main__":
     main()
-       
-                
-                
-                    
-                        
-            
-            
-            
-                
-                
-        
-
-        
-    
-        
-            
-    
-        
+    input()
